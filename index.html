@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Human Body Pose Estimation with No Fine-Tuning</title>
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+  <style>
+  :root{
+    --container-max: 1200px;
+    --side-pad: 24px;
+  }
+
+  html, body{
+    font-family: 'Noto Sans', sans-serif;
+    font-size: 18px;
+    line-height: 1.6;
+    background:#fff;
+    color:#111;
+    overflow-x: hidden;
+  }
+
+  .container,
+  .section > .container,
+  .hero .container{
+    width: 100% !important;
+    max-width: var(--container-max) !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    padding-left: var(--side-pad) !important;
+    padding-right: var(--side-pad) !important;
+  }
+
+  section.section{ padding-top: 1.5rem; padding-bottom: 1.5rem; }
+  .hero { background:#fff; }
+  .hero .hero-body{ padding-top: 3rem; padding-bottom: 2.5rem; }
+
+  .hero .title.is-1{ 
+    font-family: 'Noto Sans', sans-serif;
+    font-size: 2.5rem; 
+    font-weight: 700;
+    line-height: 1.25;
+    margin-bottom: 1.5rem;
+    color: #222;
+  }
+  
+  .course-title {
+    font-size: 1.3rem;
+    font-weight: 400;
+    color: #555;
+    margin-bottom: 1.8rem;
+  }
+  
+  .title.is-3{ 
+    font-size: 1.6rem; 
+    line-height:1.35; 
+    margin-bottom: 1.2rem;
+    margin-top: 2rem;
+  }
+
+  p, li{ text-align: justify; }
+  .has-text-centered p{ text-align: center; }
+
+  .authors {
+    font-size: 1.15rem;
+    margin-bottom: 0.8rem;
+    color: #333;
+  }
+
+  .affiliation {
+    font-size: 1rem;
+    color: #666;
+    margin-bottom: 0.3rem;
+  }
+  
+  .email {
+    font-size: 1.05rem;
+    color: #555;
+    font-family: 'Courier New', monospace;
+  }
+
+  .video-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+    margin-top: 2rem;
+  }
+
+  .video-column {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .video-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .video-item h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.8rem;
+    color: #333;
+    text-align: center;
+  }
+
+  .video-item video {
+    width: 100%;
+    max-width: 500px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+
+  .sequence-header {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #1a73e8;
+    text-align: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #1a73e8;
+  }
+
+  .abstract-grid {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 2.5rem;
+    align-items: center;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .abstract-grid img {
+    width: 100%;
+    margin: 0 auto;
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+  }
+
+  .footer{ 
+    background:#f5f5f5; 
+    padding:1.2rem 1rem; 
+    margin-top: 3rem;
+  }
+
+  @media (max-width: 768px){
+    html, body{ font-size: 16px; }
+    .hero .title.is-1{ font-size: 1.8rem; }
+    .title.is-3{ font-size: 1.35rem; }
+    :root{ --side-pad: 18px; }
+    .video-grid {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+    .abstract-grid {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+  }
+  </style>
+</head>
+<body>
+
+<section class="hero">
+  <div class="hero-body">
+    <div class="container has-text-centered">
+      <h1 class="title is-1">Human Body Pose Estimation with No Fine-Tuning</h1>
+      <p class="course-title">ECE 598 ZZ Course Project</p>
+      <p class="authors">Yulun Wu, Chaitanya Amballa, Sahil Bhandary Karnoor</p>
+      <p class="affiliation">University of Illinois Urbana-Champaign</p>
+      <p class="email">{yulun4, amballa2, sahilb5}@illinois.edu</p>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <h3 class="title is-3">Abstract</h3>
+    <div class="abstract-grid">
+      <div>
+        <p>
+          Human pose reconstruction has garnered much interest with the arrival of mainstream Head-mounted (HMD) augmented reality applications. 
+          This work focuses on using a diffusion-based framework to estimate human pose from sparse HMD-based positional sensing of a user's body. 
+          Earlier works have shown great results by using deep learning for estimating human pose, but unfortunately, nearly all of them are poor at generalizing across multiple users. 
+          This is because the positional measurements are heavily influenced by the body shape of the user from whom the data was collected for training. 
+          In this project, we perform posterior sampling-based inverse guidance on Diffusion and Flow Matching models to implicitly generalize to all possible user body shapes. 
+          Given a user's body shape, our proposed algorithms can generatively estimate the most likely sequence of poses that generated the captured positional signals.
+        </p>
+      </div>
+      <div>
+        <img src="static/pose.png" alt="Human body pose model">
+        <p style="text-align: center; margin-top: 0.5rem; font-size: 0.9rem; color: #666;">Human body model</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <h3 class="title is-3">Results</h3>
+    <p style="text-align: center; margin-bottom: 2rem; color: #555;">
+      We show pose estimation results using different methods on two sequences from the test set.
+    </p>
+
+    <div class="video-grid">
+      <div class="video-column">
+        <div class="sequence-header">Sequence 1</div>
+        
+        <div class="video-item">
+          <h4>DMAP</h4>
+          <video controls loop muted>
+            <source src="static/Ben/34_DMAP.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+
+        <div class="video-item">
+          <h4>DPS</h4>
+          <video controls loop muted>
+            <source src="static/Ben/34_DPS.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+
+        <div class="video-item">
+          <h4>DSG</h4>
+          <video controls loop muted>
+            <source src="static/Ben/34_DSG.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+
+        <div class="video-item">
+          <h4>MPGD</h4>
+          <video controls loop muted>
+            <source src="static/Ben/34_MPGD.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+
+        <div class="video-item">
+          <h4>PiGDM</h4>
+          <video controls loop muted>
+            <source src="static/Ben/34_PiGDM.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+      </div>
+
+      <div class="video-column">
+        <div class="sequence-header">Sequence 2</div>
+        
+        <div class="video-item">
+          <h4>DMAP</h4>
+          <video controls loop muted>
+            <source src="static/Ben/48_DMAP.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+
+        <div class="video-item">
+          <h4>DPS</h4>
+          <video controls loop muted>
+            <source src="static/Ben/48_DPS.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+
+        <div class="video-item">
+          <h4>DSG</h4>
+          <video controls loop muted>
+            <source src="static/Ben/48_DSG.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+
+        <div class="video-item">
+          <h4>MPGD</h4>
+          <video controls loop muted>
+            <source src="static/Ben/48_MPGD.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+
+        <div class="video-item">
+          <h4>PiGDM</h4>
+          <video controls loop muted>
+            <source src="static/Ben/48_PiGDM.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- 
+<footer class="footer">
+  <div class="container">
+    <p style="text-align: center; color: #666;">
+      ECE 598 ZZ - Fall 2025 - University of Illinois Urbana-Champaign
+    </p>
+  </div>
+</footer> -->
+
+</body>
+</html>
